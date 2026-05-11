@@ -123,12 +123,12 @@ export interface SavedJobResponse {
   id: number;
   user_id: number;
   job_id: number | null;
-  external_job_id: number | null;
+  external_job_id: string | number | null;
   saved_at: string;
 }
 
 export interface SavedJobCreatePayload {
   job_id?: number;
-  external_job_id?: number;
+  external_job_id?: string | number;
 }
 

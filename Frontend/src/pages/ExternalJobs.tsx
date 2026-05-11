@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, ExternalLink, Search, Filter, X, ChevronDown, Briefcase, MapPin, Tag } from 'lucide-react';
+import { Search, Filter, X, Briefcase, MapPin, Tag } from 'lucide-react';
 import { getExternalJobs, getSavedJobs, saveJob, unsaveJob } from '../lib/api';
 import type { AggregatedJobList, ExternalJob, UserResponse, SavedJobResponse } from '../types/api';
 
@@ -10,12 +10,7 @@ const SOURCE_BADGE: Record<string, { bg: string; text: string }> = {
   jobicy:    { bg: 'bg-purple-50',  text: 'text-purple-600'  },
 };
 
-function formatDate(value: string | null) {
-  if (!value) return null;
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return null;
-  return parsed.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-}
+
 
 const SOURCES = ['remotive', 'arbeitnow', 'jobicy'];
 
@@ -57,7 +52,6 @@ export default function ExternalJobs({ user, token }: Props) {
   const [keyword, setKeyword] = useState('');
   const [locationQuery, setLocationQuery] = useState('');
   const [selectedSources, setSelectedSources] = useState<Set<string>>(new Set());
-  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [hasSalary, setHasSalary] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -114,12 +108,7 @@ export default function ExternalJobs({ user, token }: Props) {
     }
   };
 
-  const allTags = useMemo(() => {
-    if (!data) return [];
-    const tagSet = new Set<string>();
-    data.jobs.forEach(j => j.tags.forEach(t => tagSet.add(t)));
-    return [...tagSet].sort();
-  }, [data]);
+
 
   const filteredJobs = useMemo((): ExternalJob[] => {
     if (!data) return [];
@@ -143,10 +132,6 @@ export default function ExternalJobs({ user, token }: Props) {
       jobs = jobs.filter(j => selectedSources.has(j.source));
     }
 
-    if (selectedTags.size > 0) {
-      jobs = jobs.filter(j => [...selectedTags].every(t => j.tags.includes(t)));
-    }
-
     if (selectedCategory) {
       const cat = CATEGORIES.find(c => c.label === selectedCategory);
       if (cat) jobs = jobs.filter(j => jobMatchesCategory(j, cat));
@@ -164,12 +149,12 @@ export default function ExternalJobs({ user, token }: Props) {
     });
 
     return jobs;
-  }, [data, keyword, locationQuery, selectedSources, selectedTags, selectedCategory, hasSalary]);
+  }, [data, keyword, locationQuery, selectedSources, selectedCategory, hasSalary]);
 
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [keyword, locationQuery, selectedSources, selectedTags, selectedCategory, hasSalary]);
+  }, [keyword, locationQuery, selectedSources, selectedCategory, hasSalary]);
 
   const paginatedJobs = useMemo(() => {
     return filteredJobs.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -188,7 +173,6 @@ export default function ExternalJobs({ user, token }: Props) {
 
   const clearFilters = () => {
     setSelectedSources(new Set());
-    setSelectedTags(new Set());
     setSelectedCategory(null);
     setHasSalary(false);
   };
@@ -201,13 +185,7 @@ export default function ExternalJobs({ user, token }: Props) {
     });
   };
 
-  const toggleTag = (tag: string) => {
-    setSelectedTags(prev => {
-      const next = new Set(prev);
-      next.has(tag) ? next.delete(tag) : next.add(tag);
-      return next;
-    });
-  };
+
 
   return (
     <div className="space-y-8">
@@ -329,7 +307,6 @@ export default function ExternalJobs({ user, token }: Props) {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {SOURCES.map(src => {
-                    const badge = SOURCE_BADGE[src] ?? { bg: 'bg-slate-50', text: 'text-slate-600' };
                     const active = selectedSources.has(src);
                     return (
                       <button

@@ -36,7 +36,7 @@ export default function SavedJobs({ token }: { user: UserResponse; token: string
                 isExternal: false
               };
             } else if (save.external_job_id) {
-              const extData = await getExternalJobByDbId(save.external_job_id);
+              const extData = await getExternalJobByDbId(Number(save.external_job_id));
               return {
                 ...save,
                 title: extData.title,

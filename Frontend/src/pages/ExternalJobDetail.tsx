@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getExternalJob } from '../lib/api';
 import type { ExternalJob } from '../types/api';
-import { ArrowLeft, ExternalLink, Briefcase, MapPin, Tag } from 'lucide-react';
+import { ArrowLeft, ExternalLink, MapPin, Tag } from 'lucide-react';
 
 export default function ExternalJobDetail() {
   const { jobId } = useParams<{ jobId: string }>();
