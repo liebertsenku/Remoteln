@@ -1,233 +1,258 @@
 import type {
-  AggregatedJobList,
-  ExternalJob,
-  JobCreatePayload,
-  JobResponse,
-  JobUpdatePayload,
-  LoginPayload,
-  RegisterPayload,
-  SyncRequestResponse,
-  SyncStatusResponse,
-  TokenResponse,
-  UserResponse,
-  ProfileResponse,
-  ProfileCreatePayload,
-  ApplicationResponse,
-  ApplicationCreatePayload,
-  SavedJobResponse,
-  SavedJobCreatePayload,
+ AggregatedJobList,
+ ExternalJob,
+ JobCreatePayload,
+ JobResponse,
+ JobUpdatePayload,
+ LoginPayload,
+ RegisterPayload,
+ SyncRequestResponse,
+ SyncStatusResponse,
+ TokenResponse,
+ UserResponse,
+ ProfileResponse,
+ ProfileCreatePayload,
+ ApplicationResponse,
+ ApplicationCreatePayload,
+ ApplicationUpdateStatusPayload,
+ SavedJobResponse,
+ SavedJobCreatePayload,
+ AdminStatsResponse,
 } from '../types/api';
 
 const API_PREFIX = import.meta.env.VITE_API_URL || '/api';
 
 function parseApiError(payload: unknown, fallback: string): string {
-  if (typeof payload === 'string' && payload.trim()) {
-    return payload;
-  }
+ if (typeof payload === 'string' && payload.trim()) {
+ return payload;
+ }
 
-  if (payload && typeof payload === 'object' && 'detail' in payload) {
-    const detail = payload.detail;
+ if (payload && typeof payload === 'object' && 'detail' in payload) {
+ const detail = payload.detail;
 
-    if (typeof detail === 'string' && detail.trim()) {
-      return detail;
-    }
+ if (typeof detail === 'string' && detail.trim()) {
+ return detail;
+ }
 
-    if (Array.isArray(detail)) {
-      const messages = detail
-        .map((item) => {
-          if (item && typeof item === 'object' && 'msg' in item && typeof item.msg === 'string') {
-            return item.msg;
-          }
-          return null;
-        })
-        .filter((message): message is string => Boolean(message));
+ if (Array.isArray(detail)) {
+ const messages = detail
+ .map((item) => {
+ if (item && typeof item === 'object' && 'msg' in item && typeof item.msg === 'string') {
+ return item.msg;
+ }
+ return null;
+ })
+ .filter((message): message is string => Boolean(message));
 
-      if (messages.length > 0) {
-        return messages.join(', ');
-      }
-    }
-  }
+ if (messages.length > 0) {
+ return messages.join(', ');
+ }
+ }
+ }
 
-  return fallback;
+ return fallback;
 }
 
 async function request<T>(path: string, options: RequestInit = {}, token?: string): Promise<T> {
-  const headers = new Headers(options.headers ?? {});
+ const headers = new Headers(options.headers ?? {});
 
-  if (options.body && !headers.has('Content-Type')) {
-    headers.set('Content-Type', 'application/json');
-  }
+ if (options.body && !headers.has('Content-Type')) {
+ headers.set('Content-Type', 'application/json');
+ }
 
-  if (token) {
-    headers.set('Authorization', `Bearer ${token}`);
-  }
+ if (token) {
+ headers.set('Authorization', `Bearer ${token}`);
+ }
 
-  const response = await fetch(`${API_PREFIX}${path}`, {
-    ...options,
-    headers,
-  });
+ const response = await fetch(`${API_PREFIX}${path}`, {
+ ...options,
+ headers,
+ });
 
-  const textPayload = await response.text();
-  let parsedPayload: unknown = null;
+ const textPayload = await response.text();
+ let parsedPayload: unknown = null;
 
-  if (textPayload) {
-    try {
-      parsedPayload = JSON.parse(textPayload);
-    } catch {
-      parsedPayload = textPayload;
-    }
-  }
+ if (textPayload) {
+ try {
+ parsedPayload = JSON.parse(textPayload);
+ } catch {
+ parsedPayload = textPayload;
+ }
+ }
 
-  if (!response.ok) {
-    throw new Error(parseApiError(parsedPayload, `Request gagal (${response.status})`));
-  }
+ if (!response.ok) {
+ throw new Error(parseApiError(parsedPayload, `Request gagal (${response.status})`));
+ }
 
-  return parsedPayload as T;
+ return parsedPayload as T;
 }
 
 export async function register(payload: RegisterPayload): Promise<UserResponse> {
-  return request<UserResponse>('/auth/register', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
+ return request<UserResponse>('/auth/register', {
+ method: 'POST',
+ body: JSON.stringify(payload),
+ });
 }
 
 export async function login(payload: LoginPayload): Promise<TokenResponse> {
-  return request<TokenResponse>('/auth/login', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
+ return request<TokenResponse>('/auth/login', {
+ method: 'POST',
+ body: JSON.stringify(payload),
+ });
 }
 
 export async function getMe(token: string): Promise<UserResponse> {
-  return request<UserResponse>('/auth/me', {}, token);
+ return request<UserResponse>('/auth/me', {}, token);
 }
 
 export async function getJobs(): Promise<JobResponse[]> {
-  return request<JobResponse[]>('/jobs');
+ return request<JobResponse[]>('/jobs');
 }
 
 export async function getJob(jobId: number): Promise<JobResponse> {
-  return request<JobResponse>(`/jobs/${jobId}`);
+ return request<JobResponse>(`/jobs/${jobId}`);
 }
 
 export async function createJob(token: string, payload: JobCreatePayload): Promise<JobResponse> {
-  return request<JobResponse>(
-    '/jobs',
-    {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    },
-    token,
-  );
+ return request<JobResponse>(
+ '/jobs',
+ {
+ method: 'POST',
+ body: JSON.stringify(payload),
+ },
+ token,
+ );
 }
 
 export async function updateJob(token: string, jobId: number, payload: JobUpdatePayload): Promise<JobResponse> {
-  return request<JobResponse>(
-    `/jobs/${jobId}`,
-    {
-      method: 'PUT',
-      body: JSON.stringify(payload),
-    },
-    token,
-  );
+ return request<JobResponse>(
+ `/jobs/${jobId}`,
+ {
+ method: 'PUT',
+ body: JSON.stringify(payload),
+ },
+ token,
+ );
 }
 
 export async function deleteJob(token: string, jobId: number): Promise<{ message: string }> {
-  return request<{ message: string }>(
-    `/jobs/${jobId}`,
-    {
-      method: 'DELETE',
-    },
-    token,
-  );
+ return request<{ message: string }>(
+ `/jobs/${jobId}`,
+ {
+ method: 'DELETE',
+ },
+ token,
+ );
 }
 
 type GetExternalJobsParams = {
-  limit?: number;
-  keyword?: string;
+ limit?: number;
+ keyword?: string;
 };
 
 export async function getExternalJobs(params: GetExternalJobsParams = {}): Promise<AggregatedJobList> {
-  const search = new URLSearchParams();
+ const search = new URLSearchParams();
 
-  if (params.limit) {
-    search.set('limit', String(params.limit));
-  }
+ if (params.limit) {
+ search.set('limit', String(params.limit));
+ }
 
-  if (params.keyword?.trim()) {
-    search.set('keyword', params.keyword.trim());
-  }
+ if (params.keyword?.trim()) {
+ search.set('keyword', params.keyword.trim());
+ }
 
-  const query = search.toString();
-  const endpoint = query ? `/external/aggregate?${query}` : '/external/aggregate';
-  return request<AggregatedJobList>(endpoint);
+ const query = search.toString();
+ const endpoint = query ? `/external/aggregate?${query}`: '/external/aggregate';
+ return request<AggregatedJobList>(endpoint);
 }
 
 export async function getExternalJob(jobId: string): Promise<ExternalJob> {
-  return request<ExternalJob>(`/external/jobs/${jobId}`);
+ return request<ExternalJob>(`/external/jobs/${jobId}`);
 }
 
 export async function getExternalJobByDbId(dbId: number): Promise<ExternalJob> {
-  return request<ExternalJob>(`/external/jobs/db/${dbId}`);
+ return request<ExternalJob>(`/external/jobs/db/${dbId}`);
 }
 
 export async function createExternalRefreshRequest(token: string): Promise<SyncRequestResponse> {
-  return request<SyncRequestResponse>(
-    '/external/refresh-request',
-    {
-      method: 'POST',
-    },
-    token
-  );
+ return request<SyncRequestResponse>(
+ '/external/refresh-request',
+ {
+ method: 'POST',
+ },
+ token
+ );
 }
 
 export async function getExternalRefreshStatus(token: string, requestId: number): Promise<SyncStatusResponse> {
-  return request<SyncStatusResponse>(`/external/refresh-status/${requestId}`, {}, token);
+ return request<SyncStatusResponse>(`/external/refresh-status/${requestId}`, {}, token);
 }
 
 export async function getMyProfile(token: string): Promise<ProfileResponse> {
-  return request<ProfileResponse>('/profiles/me', {}, token);
+ return request<ProfileResponse>('/profiles/me', {}, token);
 }
 
 export async function createProfile(token: string, payload: ProfileCreatePayload): Promise<ProfileResponse> {
-  return request<ProfileResponse>('/profiles', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  }, token);
+ return request<ProfileResponse>('/profiles', {
+ method: 'POST',
+ body: JSON.stringify(payload),
+ }, token);
 }
 
 export async function updateProfile(token: string, payload: ProfileCreatePayload): Promise<ProfileResponse> {
-  return request<ProfileResponse>('/profiles/me', {
-    method: 'PUT',
-    body: JSON.stringify(payload),
-  }, token);
+ return request<ProfileResponse>('/profiles/me', {
+ method: 'PUT',
+ body: JSON.stringify(payload),
+ }, token);
 }
 
 export async function applyForJob(token: string, payload: ApplicationCreatePayload): Promise<ApplicationResponse> {
-  return request<ApplicationResponse>('/applications', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  }, token);
+ return request<ApplicationResponse>('/applications', {
+ method: 'POST',
+ body: JSON.stringify(payload),
+ }, token);
 }
 
 export async function getMyApplications(token: string): Promise<ApplicationResponse[]> {
-  return request<ApplicationResponse[]>('/applications/me', {}, token);
+ return request<ApplicationResponse[]>('/applications/me', {}, token);
 }
 
 export async function saveJob(token: string, payload: SavedJobCreatePayload): Promise<SavedJobResponse> {
-  return request<SavedJobResponse>('/saved-jobs', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  }, token);
+ return request<SavedJobResponse>('/saved-jobs', {
+ method: 'POST',
+ body: JSON.stringify(payload),
+ }, token);
 }
 
 export async function getSavedJobs(token: string): Promise<SavedJobResponse[]> {
-  return request<SavedJobResponse[]>('/saved-jobs', {}, token);
+ return request<SavedJobResponse[]>('/saved-jobs', {}, token);
 }
 
 export async function unsaveJob(token: string, savedJobId: number): Promise<{ message: string }> {
   return request<{ message: string }>(`/saved-jobs/${savedJobId}`, {
     method: 'DELETE',
   }, token);
+}
+
+export async function getJobApplications(token: string, jobId: number): Promise<ApplicationResponse[]> {
+  return request<ApplicationResponse[]>(`/applications/job/${jobId}`, {}, token);
+}
+
+export async function updateApplicationStatus(
+  token: string,
+  appId: number,
+  payload: ApplicationUpdateStatusPayload
+): Promise<ApplicationResponse> {
+  return request<ApplicationResponse>(`/applications/${appId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  }, token);
+}
+
+export async function getAdminStats(token: string): Promise<AdminStatsResponse> {
+  return request<AdminStatsResponse>('/admin/stats', {}, token);
+}
+
+export async function getAdminRecentUsers(token: string, limit: number = 50): Promise<UserResponse[]> {
+  return request<UserResponse[]>(`/admin/users?limit=${limit}`, {}, token);
 }

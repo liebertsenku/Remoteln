@@ -6,7 +6,7 @@ from database import engine, Base, DB_NAME
 from models import user, job, external, profile, application, saved_job
 
 # Import routers
-from routers import auth, jobs, external, profiles, applications, saved_jobs
+from routers import auth, jobs, external, profiles, applications, saved_jobs, admin
 
 # Buat semua tabel di database SQLite
 Base.metadata.create_all(bind=engine)
@@ -70,6 +70,7 @@ app.include_router(external.router)
 app.include_router(profiles.router)
 app.include_router(applications.router)
 app.include_router(saved_jobs.router)
+app.include_router(admin.router)
 
 @app.get("/", tags=["Root"])
 def root():

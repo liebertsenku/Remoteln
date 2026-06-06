@@ -1,6 +1,8 @@
 from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
 from enum import Enum
+from typing import Optional
+from schemas.profile import ProfileResponse
 
 class RoleEnum(str, Enum):
     jobseeker = "jobseeker"
@@ -23,6 +25,7 @@ class UserResponse(BaseModel):
     email: str
     role: RoleEnum
     created_at: datetime
+    profile: Optional[ProfileResponse] = None
 
     model_config = {"from_attributes": True}
 

@@ -3,6 +3,8 @@ from typing import Optional
 from datetime import datetime
 from models.application import ApplicationStatus
 
+from schemas.user import UserResponse
+
 # Using ForwardRefs or string annotations if circular imports happen, but let's just return basic info first
 # and add specific detailed schemas if needed.
 
@@ -21,5 +23,6 @@ class ApplicationResponse(ApplicationBase):
     user_id: int
     status: ApplicationStatus
     applied_at: datetime
+    applicant: Optional[UserResponse] = None
 
     model_config = {"from_attributes": True}
