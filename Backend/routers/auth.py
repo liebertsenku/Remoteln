@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from passlib.context import CryptContext
+import bcrypt
 from database import get_db
 from models.user import User
 from schemas.user import UserCreate, UserResponse, TokenResponse
@@ -10,13 +10,16 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    pwd_bytes = password.encode('utf-8')
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(pwd_bytes, salt)
+    return hashed.decode('utf-8')
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    plain_bytes = plain.encode('utf-8')
+    hashed_bytes = hashed.encode('utf-8')
+    return bcrypt.checkpw(plain_bytes, hashed_bytes)
 
 
 @router.post(
