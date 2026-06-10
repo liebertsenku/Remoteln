@@ -95,10 +95,17 @@ export async function register(payload: RegisterPayload): Promise<UserResponse> 
 }
 
 export async function login(payload: LoginPayload): Promise<TokenResponse> {
- return request<TokenResponse>('/auth/login', {
- method: 'POST',
- body: JSON.stringify(payload),
- });
+  const formData = new URLSearchParams();
+  formData.append('username', payload.email);
+  formData.append('password', payload.password);
+
+  return request<TokenResponse>('/auth/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: formData.toString(),
+  });
 }
 
 export async function getMe(token: string): Promise<UserResponse> {

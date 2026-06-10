@@ -3,9 +3,10 @@ from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from database import get_db
 from models.user import User
-from schemas.user import UserCreate, UserLogin, UserResponse, TokenResponse
+from schemas.user import UserCreate, UserResponse, TokenResponse
 from auth.jwt_handler import create_access_token
 from auth.dependencies import get_current_user
+from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -48,8 +49,8 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
     response_model=TokenResponse,
     summary="Login dan dapatkan JWT token"
 )
-def login(payload: UserLogin, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == payload.email).first()
+def login(payload: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == payload.username).first()
     if not user or not verify_password(payload.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

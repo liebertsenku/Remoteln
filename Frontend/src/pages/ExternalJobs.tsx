@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Filter, X, Briefcase, MapPin, Tag } from 'lucide-react';
+import { Search, Filter, X, Briefcase, MapPin, Tag, Bookmark } from 'lucide-react';
 import { getExternalJobs, getSavedJobs, saveJob, unsaveJob } from '../lib/api';
 import type { AggregatedJobList, ExternalJob, UserResponse, SavedJobResponse } from '../types/api';
 import Swal from 'sweetalert2';
