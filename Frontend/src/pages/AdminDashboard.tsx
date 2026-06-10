@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { 
   RefreshCcw, Activity, LayoutDashboard, Users, Database, LogOut, 
-  Bell, Settings, Search, Briefcase, Download, Trash2, X 
+  Bell, Settings, Briefcase, Download, Trash2, X 
 } from 'lucide-react';
 import { 
   createExternalRefreshRequest, getExternalRefreshStatus, 

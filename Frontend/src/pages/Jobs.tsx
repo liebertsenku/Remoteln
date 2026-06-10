@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Filter, X, MapPin, Tag } from 'lucide-react';
+import { Search, Filter, MapPin } from 'lucide-react';
 import { getJobs, getSavedJobs, saveJob, unsaveJob } from '../lib/api';
 import type { JobResponse, UserResponse, SavedJobResponse } from '../types/api';
 import Swal from 'sweetalert2';
@@ -158,14 +158,6 @@ export default function Jobs({ user, token }: Props) {
   }, [filteredJobs, currentPage]);
 
   const totalPages = Math.ceil(filteredJobs.length / pageSize);
-
-  const categoryCount = useMemo(() => {
-    return Object.fromEntries(
-      CATEGORIES.map(cat => [cat.label, jobs.filter(j => jobMatchesCategory(j, cat)).length])
-    );
-  }, [jobs]);
-
-  const POPULAR_SEARCHES = ['Front-end', 'Back-end', 'Development', 'PHP', 'Laravel', 'Bootstrap', 'Developer', 'Team Lead', 'Product Testing', 'Javascript'];
 
   const clearFilters = () => {
     setSelectedCategory(null);

@@ -1,16 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Filter, X, Briefcase, MapPin, Tag, Bookmark } from 'lucide-react';
+import { Search, Filter, Briefcase, MapPin, Tag, Bookmark } from 'lucide-react';
 import { getExternalJobs, getSavedJobs, saveJob, unsaveJob } from '../lib/api';
 import type { AggregatedJobList, ExternalJob, UserResponse, SavedJobResponse } from '../types/api';
 import Swal from 'sweetalert2';
-
-const SOURCE_BADGE: Record<string, { bg: string; text: string }> = {
- remotive: { bg: 'bg-emerald-50', text: 'text-emerald-600' },
- arbeitnow: { bg: 'bg-blue-50', text: 'text-blue-600' },
- jobicy: { bg: 'bg-purple-50', text: 'text-purple-600' },
-};
-
 
 
 const SOURCES = ['remotive', 'arbeitnow', 'jobicy'];
@@ -170,15 +162,6 @@ export default function ExternalJobs({ user, token }: Props) {
  }, [filteredJobs, currentPage]);
 
  const totalPages = Math.ceil(filteredJobs.length / pageSize);
-
- const categoryCount = useMemo(() => {
- if (!data) return {};
- return Object.fromEntries(
- CATEGORIES.map(cat => [cat.label, data.jobs.filter(j => jobMatchesCategory(j, cat)).length])
- );
- }, [data]);
-
- const POPULAR_SEARCHES = ['Front-end', 'Back-end', 'Development', 'PHP', 'Laravel', 'Bootstrap', 'Developer', 'Team Lead', 'Product Testing', 'Javascript'];
 
  const clearFilters = () => {
  setSelectedSources(new Set());
@@ -398,7 +381,6 @@ export default function ExternalJobs({ user, token }: Props) {
  <>
  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
  {paginatedJobs.map(job => {
- const badge = SOURCE_BADGE[job.source] ?? { bg: 'bg-slate-50', text: 'text-slate-600' };
  return (
                 <article
                   key={job.id}
