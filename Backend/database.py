@@ -4,14 +4,13 @@ from sqlalchemy.orm import sessionmaker
 import os
 
 DB_NAME = os.getenv("MYSQLDATABASE", "remotein")
+MYSQL_USER = os.getenv("MYSQLUSER", "root")
+MYSQL_PASSWORD = os.getenv("MYSQLPASSWORD", "")
+MYSQL_HOST = os.getenv("MYSQLHOST", "localhost")
+MYSQL_PORT = os.getenv("MYSQLPORT", "3306")
 
 DATABASE_URL = (
-    f"mysql+pymysql://"
-    f"{os.getenv('MYSQLUSER')}:"
-    f"{os.getenv('MYSQLPASSWORD')}@"
-    f"{os.getenv('MYSQLHOST')}:"
-    f"{os.getenv('MYSQLPORT')}/"
-    f"{DB_NAME}"
+    f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{DB_NAME}"
 )
 
 engine = create_engine(DATABASE_URL)
