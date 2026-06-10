@@ -3,4 +3,10 @@ uvicorn
 sqlalchemy
 pymysql
 cryptography
-python-dotenvx
+python-dotenv
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt
+pydantic[email]
+python-multipart
+httpx
