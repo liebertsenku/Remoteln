@@ -57,11 +57,23 @@ from seed import seed_data
 seed_data()
 # ──────────────────────────────────────────────────────────────────────────
 
+from starlette.requests import Request
+from starlette.middleware.base import BaseHTTPMiddleware
+
 app = FastAPI(
     title="RemoteIn API",
     description="Platform lowongan kerja remote: RESTful API berbasis FastAPI",
     version="1.0.0"
 )
+
+class StripAPIPrefixMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        path = request.scope.get("path", "")
+        if path.startswith("/api"):
+            request.scope["path"] = path[4:] or "/"
+        return await call_next(request)
+
+app.add_middleware(StripAPIPrefixMiddleware)
 
 # Daftarkan semua router
 app.include_router(auth.router)

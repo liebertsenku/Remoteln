@@ -1,1 +1,6 @@
--r Backend/requirements.txt
+fastapi
+uvicorn
+sqlalchemy
+pymysql
+cryptography
+python-dotenvx
