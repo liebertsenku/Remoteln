@@ -26,22 +26,32 @@ def verify_password(plain: str, hashed: str) -> bool:
     summary="Registrasi user baru"
 )
 def register(payload: UserCreate, db: Session = Depends(get_db)):
-    existing = db.query(User).filter(User.email == payload.email).first()
-    if existing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email sudah terdaftar"
+    try:
+        existing = db.query(User).filter(User.email == payload.email).first()
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email sudah terdaftar"
+            )
+        new_user = User(
+            name=payload.name,
+            email=payload.email,
+            hashed_password=hash_password(payload.password),
+            role=payload.role
         )
-    new_user = User(
-        name=payload.name,
-        email=payload.email,
-        hashed_password=hash_password(payload.password),
-        role=payload.role
-    )
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return new_user
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        return new_user
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        print(f"Registration error: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Terjadi kesalahan saat registrasi: {str(e)}"
+        )
 
 
 @router.post(
