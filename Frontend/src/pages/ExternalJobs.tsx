@@ -142,11 +142,14 @@ export default function ExternalJobs({ user, token }: Props) {
  jobs = jobs.filter(j => !!j.salary);
  }
 
- // Always sort by date for consistency with design (we don't show the sort dropdown anymore)
+ // Prioritize jobicy (since they have logos), then sort by date
  jobs.sort((a, b) => {
- const da = a.published_at ? new Date(a.published_at).getTime() : 0;
- const db = b.published_at ? new Date(b.published_at).getTime() : 0;
- return db - da;
+   if (a.source === 'jobicy' && b.source !== 'jobicy') return -1;
+   if (a.source !== 'jobicy' && b.source === 'jobicy') return 1;
+   
+   const da = a.published_at ? new Date(a.published_at).getTime() : 0;
+   const db = b.published_at ? new Date(b.published_at).getTime() : 0;
+   return db - da;
  });
 
  return jobs;
