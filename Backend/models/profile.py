@@ -11,7 +11,6 @@ class UserProfile(Base):
     bio = Column(Text, nullable=True)
     resume_url = Column(String(500), nullable=True)
     skills = Column(String(1000), nullable=True) # Comma separated
-    created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = relationship("User", back_populates="profile")

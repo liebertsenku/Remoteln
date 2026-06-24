@@ -16,7 +16,5 @@ class ProfileUpdate(ProfileBase):
 class ProfileResponse(ProfileBase):
     id: int
     user_id: int
-    created_at: datetime
     updated_at: datetime
-
     model_config = {"from_attributes": True}
