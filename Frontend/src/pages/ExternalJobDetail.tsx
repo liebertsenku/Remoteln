@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { getExternalJob } from '../lib/api';
 import type { ExternalJob } from '../types/api';
 import { ArrowLeft, ExternalLink, MapPin, Tag } from 'lucide-react';
