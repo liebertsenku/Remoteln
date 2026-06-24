@@ -5,6 +5,7 @@ import { createJob, deleteJob, getJobs, updateJob, getJobApplications, updateApp
 import type { JobCreatePayload, JobResponse, UserResponse, ApplicationResponse } from '../types/api';
 import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import confetti from 'canvas-confetti';
 
 type EmployerDashboardProps = {
   user: UserResponse | null;
@@ -211,11 +212,50 @@ export default function EmployerDashboard({ user, token, onLogout }: EmployerDas
 
   const handleStatusChange = async (appId: number, status: 'pending' | 'reviewed' | 'accepted' | 'rejected') => {
     if (!token) return;
+
+    let confirmText = `Apakah Anda yakin ingin mengubah status menjadi ${status}?`;
+    let confirmBtn = 'Ya, Ubah';
+    let btnColor = '#6344F5';
+
+    if (status === 'accepted') {
+      confirmText = 'Apakah Anda yakin ingin Menerima kandidat ini?';
+      confirmBtn = 'Ya, Terima';
+      btnColor = '#10b981';
+    } else if (status === 'rejected') {
+      confirmText = 'Apakah Anda yakin ingin Menolak kandidat ini?';
+      confirmBtn = 'Ya, Tolak';
+      btnColor = '#ef4444';
+    }
+
+    const { isConfirmed } = await Swal.fire({
+      title: 'Konfirmasi',
+      text: confirmText,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: btnColor,
+      cancelButtonColor: '#64748b',
+      confirmButtonText: confirmBtn,
+      cancelButtonText: 'Batal'
+    });
+
+    if (!isConfirmed) return;
+
     try {
       const updatedApp = await updateApplicationStatus(token, appId, { status });
       setApplicants((prev) => prev.map((app) => (app.id === appId ? updatedApp : app)));
+
+      if (status === 'accepted') {
+        confetti({
+          particleCount: 150,
+          spread: 80,
+          origin: { y: 0.6 }
+        });
+        Swal.fire('Berhasil!', 'Kandidat berhasil Diterima.', 'success');
+      } else {
+        Swal.fire('Berhasil', `Status berhasil diubah menjadi ${status}.`, 'success');
+      }
     } catch {
-      Swal.fire('Error', 'Failed to update status.', 'error');
+      Swal.fire('Error', 'Gagal memperbarui status.', 'error');
     }
   };
 

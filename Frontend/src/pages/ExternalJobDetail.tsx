@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { getExternalJob } from '../lib/api';
 import type { ExternalJob } from '../types/api';
 import { ArrowLeft, ExternalLink, MapPin, Tag } from 'lucide-react';
 
-export default function ExternalJobDetail() {
- const { jobId } = useParams<{ jobId: string }>();
- const [job, setJob] = useState<ExternalJob | null>(null);
- const [loading, setLoading] = useState(true);
- const [error, setError] = useState<string | null>(null);
+ export default function ExternalJobDetail() {
+  const { jobId } = useParams<{ jobId: string }>();
+  const navigate = useNavigate();
+  const [job, setJob] = useState<ExternalJob | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
  useEffect(() => {
  if (!jobId) {
@@ -39,21 +40,21 @@ export default function ExternalJobDetail() {
  return (
  <div className="space-y-4 rounded-2xl border border-red-200 bg-red-50 p-6">
  <p className="text-red-700">{error ?? 'External Job tidak ditemukan.'}</p>
- <Link to="/remote-jobs" className="text-sm font-semibold text-primary hover:text-primary-hover">
- Kembali ke daftar external jobs
- </Link>
+ <button onClick={() => navigate(-1)} className="text-sm font-semibold text-primary hover:text-primary-hover">
+ Kembali
+ </button>
  </div>
  );
  }
 
  return (
- <article className="space-y-6">
- <Link to="/remote-jobs" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
+ <article className="max-w-4xl mx-auto py-8 px-4 space-y-6">
+ <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
  <ArrowLeft className="w-4 h-4" />
- Back to Remote Jobs
- </Link>
+ Back
+ </button>
 
- <div className="rounded-2xl border border-slate-200 bg-white p-8">
+ <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
  <header className="flex flex-col md:flex-row md:items-start justify-between gap-6">
  <div className="flex gap-6">
  {job.company_logo ? (
@@ -96,9 +97,9 @@ export default function ExternalJobDetail() {
  </a>
  </div>
  </header>
+ </div>
 
- <hr className="my-8 border-slate-100" />
-
+ <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
  <section className="space-y-8">
  <div>
  <h2 className="text-xl font-bold text-slate-900 mb-4 font-heading">About this External Job</h2>

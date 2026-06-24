@@ -18,7 +18,7 @@ class SavedJobResponse(BaseModel):
     id: int
     user_id: int
     job_id: Optional[int]
-    external_job_id: Optional[int]
+    external_job_id: Optional[str]
     saved_at: datetime
 
     model_config = {"from_attributes": True}

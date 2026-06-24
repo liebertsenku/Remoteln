@@ -45,11 +45,30 @@ def save_job(payload: SavedJobCreate, db: Session = Depends(get_db), current_use
     db.add(saved_job)
     db.commit()
     db.refresh(saved_job)
-    return saved_job
+    return {
+        "id": saved_job.id,
+        "user_id": saved_job.user_id,
+        "job_id": saved_job.job_id,
+        "external_job_id": payload.external_job_id,
+        "saved_at": saved_job.saved_at
+    }
 
 @router.get("", response_model=List[SavedJobResponse])
 def get_saved_jobs(db: Session = Depends(get_db), current_user: User = Depends(require_jobseeker)):
-    return db.query(SavedJob).filter(SavedJob.user_id == current_user.id).all()
+    saved_jobs = db.query(SavedJob).filter(SavedJob.user_id == current_user.id).all()
+    results = []
+    for sj in saved_jobs:
+        ext_id = None
+        if sj.external_job:
+            ext_id = f"{sj.external_job.source}_{sj.external_job.source_job_id}"
+        results.append({
+            "id": sj.id,
+            "user_id": sj.user_id,
+            "job_id": sj.job_id,
+            "external_job_id": ext_id,
+            "saved_at": sj.saved_at
+        })
+    return results
 
 @router.delete("/{saved_job_id}", status_code=status.HTTP_200_OK)
 def unsave_job(saved_job_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_jobseeker)):

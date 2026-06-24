@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bookmark, MapPin, Building, Trash2, ArrowRight } from 'lucide-react';
-import { getSavedJobs, getJob, getExternalJobByDbId, unsaveJob } from '../lib/api';
+import { getSavedJobs, getJob, getExternalJob, unsaveJob } from '../lib/api';
 import type { UserResponse, SavedJobResponse } from '../types/api';
 import Swal from 'sweetalert2';
 
@@ -37,7 +37,7 @@ export default function SavedJobs({ token }: { user: UserResponse; token: string
                 isExternal: false
               };
             } else if (save.external_job_id) {
-              const extData = await getExternalJobByDbId(Number(save.external_job_id));
+              const extData = await getExternalJob(String(save.external_job_id));
               return {
                 ...save,
                 title: extData.title,

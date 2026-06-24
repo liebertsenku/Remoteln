@@ -91,7 +91,7 @@ function AppLayout({ user, token, sessionLoading, handleLoggedIn, handleLogout }
         ) : (
           <Routes>
             <Route path="/" element={<Home user={user} />} />
-            <Route path="/jobs" element={<Jobs />} />
+            <Route path="/jobs" element={<Jobs user={user} token={token} />} />
             <Route path="/jobs/:jobId" element={<JobDetail user={user} />} />
             <Route path="/remote-jobs" element={<ExternalJobs user={user} token={token} />} />
             <Route path="/remote-jobs/:jobId" element={<ExternalJobDetail />} />

@@ -3,6 +3,7 @@ import { Search, Filter, Briefcase, MapPin, Tag, Bookmark } from 'lucide-react';
 import { getExternalJobs, getSavedJobs, saveJob, unsaveJob } from '../lib/api';
 import type { AggregatedJobList, ExternalJob, UserResponse, SavedJobResponse } from '../types/api';
 import Swal from 'sweetalert2';
+import { Link } from 'react-router-dom';
 
 
 const SOURCES = ['remotive', 'arbeitnow', 'jobicy'];
@@ -402,11 +403,11 @@ export default function ExternalJobs({ user, token }: Props) {
                   
                   <div>
                     {/* Title */}
-                    <a href={job.url} target="_blank" rel="noopener noreferrer" className="block mb-4 pr-8">
+                    <Link to={`/remote-jobs/${job.id}`} className="block mb-4 pr-8">
                       <h2 className="text-[1.15rem] font-bold text-[#111827] leading-snug mb-1 group-hover:text-indigo-600 transition-colors line-clamp-2">
                         {job.title}
                       </h2>
-                    </a>
+                    </Link>
 
                     {/* Pills: Source & Salary */}
                     <div className="flex items-center gap-2 mb-6">

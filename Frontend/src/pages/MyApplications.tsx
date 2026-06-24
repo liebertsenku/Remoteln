@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom';
 import { Briefcase, Calendar, CheckCircle, Clock, XCircle, FileText, Search, Eye, Rocket, BadgeCheck, Bell } from 'lucide-react';
 import { getMyApplications, getJob } from '../lib/api';
 import type { UserResponse, ApplicationResponse } from '../types/api';
+import confetti from 'canvas-confetti';
 
 type ApplicationWithJob = ApplicationResponse & {
   jobTitle?: string;
   company?: string;
+  employerEmail?: string;
 };
 
 export default function MyApplications({ token }: { user: UserResponse; token: string | null }) {
@@ -25,15 +27,35 @@ export default function MyApplications({ token }: { user: UserResponse; token: s
           apps.map(async (app) => {
             try {
               const jobData = await getJob(app.job_id);
-              return { ...app, jobTitle: jobData.title, company: jobData.company };
+              return { 
+                ...app, 
+                jobTitle: jobData.title, 
+                company: jobData.company,
+                employerEmail: jobData.owner?.email
+              };
             } catch {
-              return { ...app, jobTitle: 'Unknown Job', company: 'Unknown Company' };
+              return { 
+                ...app, 
+                jobTitle: 'Unknown Job', 
+                company: 'Unknown Company' 
+              };
             }
           })
         );
 
         // Sort by newest first
-        setApplications(appsWithJobs.sort((a, b) => new Date(b.applied_at).getTime() - new Date(a.applied_at).getTime()));
+        const sorted = appsWithJobs.sort((a, b) => new Date(b.applied_at).getTime() - new Date(a.applied_at).getTime());
+        setApplications(sorted);
+
+        if (sorted.some(app => app.status === 'accepted')) {
+          setTimeout(() => {
+            confetti({
+              particleCount: 150,
+              spread: 80,
+              origin: { y: 0.6 }
+            });
+          }, 500);
+        }
       } catch (err: any) {
         setError(err.message || 'Failed to load applications');
       } finally {
@@ -70,6 +92,22 @@ export default function MyApplications({ token }: { user: UserResponse; token: s
       </div>
 
       {error && <div className="bg-rose-50 text-rose-700 p-4 rounded-xl border border-rose-100 mb-6 font-medium">{error}</div>}
+
+      {applications.some(app => app.status === 'accepted') && (
+        <div className="mb-8 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-2xl p-6 text-white shadow-lg shadow-emerald-500/30 relative overflow-hidden">
+          <div className="absolute -right-10 -top-10 opacity-20 pointer-events-none">
+            <CheckCircle className="w-40 h-40" />
+          </div>
+          <div className="relative z-10">
+            <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
+              <span className="text-3xl">🎉</span> Congratulations!
+            </h2>
+            <p className="text-emerald-50 font-medium text-[15px]">
+              Satu atau lebih lamaran Anda telah diterima! Periksa detailnya di bawah.
+            </p>
+          </div>
+        </div>
+      )}
 
       {applications.length === 0 && !error ? (
         <div className="space-y-8">
@@ -128,6 +166,13 @@ export default function MyApplications({ token }: { user: UserResponse; token: s
                     </div>
                   )}
                 </div>
+                {app.status === 'accepted' && app.employerEmail && (
+                  <div className="mt-4 p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
+                    <p className="text-[13px] text-emerald-800 font-medium leading-relaxed">
+                      <strong>Tindak Lanjut:</strong> Selamat! Silakan hubungi <em>employer</em> melalui email di <a href={`mailto:${app.employerEmail}`} className="text-emerald-600 font-bold hover:underline">{app.employerEmail}</a> untuk informasi proses selanjutnya.
+                    </p>
+                  </div>
+                )}
               </div>
               <div className="mt-4 sm:mt-0 sm:shrink-0">
                 <Link to={`/jobs/${app.job_id}`} className="inline-flex w-full justify-center rounded-xl bg-[#f0f3ff] px-6 py-2.5 text-[14px] font-bold text-[#6344F5] hover:bg-[#e0e7ff] transition-colors">

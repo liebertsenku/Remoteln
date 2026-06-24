@@ -13,8 +13,9 @@ export default function Profile({ user, token }: { user: UserResponse; token: st
   const [formData, setFormData] = useState({
     bio: '',
     resume_url: '',
-    skills: '',
   });
+  const [skillTags, setSkillTags] = useState<string[]>([]);
+  const [skillInput, setSkillInput] = useState('');
 
   useEffect(() => {
     if (!token) return;
@@ -25,8 +26,8 @@ export default function Profile({ user, token }: { user: UserResponse; token: st
         setFormData({
           bio: data.bio || '',
           resume_url: data.resume_url || '',
-          skills: data.skills || '',
         });
+        setSkillTags(data.skills ? data.skills.split(',').map((s: string) => s.trim()).filter((s: string) => s) : []);
       } catch (err: any) {
         if (err.message && err.message.includes('404')) {
           // No profile yet
@@ -54,7 +55,7 @@ export default function Profile({ user, token }: { user: UserResponse; token: st
       const payload = {
         bio: formData.bio.trim() || null,
         resume_url: formData.resume_url.trim() || null,
-        skills: formData.skills.trim() || null,
+        skills: skillTags.join(', ') || null,
       };
 
       if (profile) {
@@ -159,15 +160,38 @@ export default function Profile({ user, token }: { user: UserResponse; token: st
 
           <div className="space-y-1.5">
             <label className="text-[13px] font-bold text-slate-700">Skills</label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-4 flex items-center text-[#6344F5] font-bold text-[18px] select-none pointer-events-none">+</span>
+            <div className="rounded-xl border border-slate-200 bg-[#f8f9fc] p-2 flex flex-wrap gap-2 focus-within:border-[#6344F5] focus-within:bg-white focus-within:ring-1 focus-within:ring-[#6344F5] transition-all">
+              {skillTags.map((tag, idx) => (
+                <span key={idx} className="flex items-center gap-1.5 bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-[12px] font-bold tracking-wide">
+                  {tag}
+                  <button 
+                    type="button" 
+                    onClick={() => setSkillTags(skillTags.filter((_, i) => i !== idx))}
+                    className="text-indigo-400 hover:text-indigo-700 focus:outline-none transition-colors"
+                  >
+                    &times;
+                  </button>
+                </span>
+              ))}
               <input
                 type="text"
-                name="skills"
-                value={formData.skills}
-                onChange={handleChange}
-                className="w-full rounded-xl border border-slate-200 bg-[#f8f9fc] py-3.5 pl-9 pr-4 text-[14px] text-slate-800 placeholder-[#6344F5] font-semibold focus:border-[#6344F5] focus:bg-white focus:ring-1 focus:ring-[#6344F5] outline-none transition-all"
-                placeholder="Add Skill"
+                value={skillInput}
+                onChange={(e) => setSkillInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    const newSkill = skillInput.trim();
+                    if (newSkill && !skillTags.includes(newSkill)) {
+                      setSkillTags([...skillTags, newSkill]);
+                      setSkillInput('');
+                    }
+                  } else if (e.key === 'Backspace' && !skillInput && skillTags.length > 0) {
+                    e.preventDefault();
+                    setSkillTags(skillTags.slice(0, -1));
+                  }
+                }}
+                className="flex-1 bg-transparent border-none outline-none text-[14px] text-slate-800 placeholder-[#6344F5]/50 font-semibold min-w-[140px] py-1.5 px-2"
+                placeholder={skillTags.length === 0 ? "Ketik skill (contoh: PHP) lalu Enter" : ""}
               />
             </div>
           </div>
