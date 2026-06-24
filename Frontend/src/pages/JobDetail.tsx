@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Bookmark, Send, Briefcase, MapPin, Building, Calendar, X } from 'lucide-react';
-import { getJob, applyForJob, saveJob } from '../lib/api';
+import { getJob, applyForJob, saveJob, getSavedJobs, unsaveJob } from '../lib/api';
 import type { JobResponse, UserResponse } from '../types/api';
 import Swal from 'sweetalert2';
 
@@ -36,7 +36,7 @@ export default function JobDetail({ user }: JobDetailProps) {
  const [applyError, setApplyError] = useState('');
 
  const [isSaving, setIsSaving] = useState(false);
- const [saveSuccess, setSaveSuccess] = useState('');
+ const [savedJobId, setSavedJobId] = useState<number | null>(null);
 
  useEffect(() => {
  const parsedId = Number(jobId);
@@ -60,6 +60,46 @@ export default function JobDetail({ user }: JobDetailProps) {
  void loadJob();
  }, [jobId]);
 
+ useEffect(() => {
+    if (!token || user?.role !== 'jobseeker' || !job) return;
+    const checkSavedStatus = async () => {
+      try {
+        const saved = await getSavedJobs(token);
+        const existing = saved.find((s) => s.job_id === job.id);
+        if (existing) {
+          setSavedJobId(existing.id);
+        } else {
+          setSavedJobId(null);
+        }
+      } catch (err) {
+        console.error('Failed to check saved status', err);
+      }
+    };
+    void checkSavedStatus();
+  }, [token, user?.role, job?.id]);
+
+  const handleSaveJob = async () => {
+    if (!token || !job) return;
+    setIsSaving(true);
+    try {
+      if (savedJobId) {
+        await unsaveJob(token, savedJobId);
+        setSavedJobId(null);
+      } else {
+        const response = await saveJob(token, { job_id: job.id });
+        setSavedJobId(response.id);
+      }
+    } catch (err: any) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: err.message || 'Failed to update saved job.'
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
  const handleApplySubmit = async (e: React.FormEvent) => {
  e.preventDefault();
  if (!token || !job) return;
@@ -82,25 +122,6 @@ export default function JobDetail({ user }: JobDetailProps) {
  setApplyError(err.message || 'Failed to apply. You might have applied already.');
  } finally {
  setIsApplying(false);
- }
- };
-
- const handleSaveJob = async () => {
- if (!token || !job) return;
- setIsSaving(true);
- setSaveSuccess('');
- try {
- await saveJob(token, { job_id: job.id });
- setSaveSuccess('Job saved!');
- setTimeout(() => setSaveSuccess(''), 3000);
- } catch (err: any) {
- Swal.fire({
- icon: 'error',
- title: 'Oops...',
- text: err.message || 'Failed to save job. It might already be saved.'
- });
- } finally {
- setIsSaving(false);
  }
  };
 
@@ -150,13 +171,17 @@ export default function JobDetail({ user }: JobDetailProps) {
  <Send className="h-4 w-4" /> Apply Now
  </button>
  <button
- onClick={handleSaveJob}
- disabled={isSaving}
- className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-8 py-3.5 font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition-all focus:ring-4 focus:ring-slate-100 disabled:opacity-50"
- >
- <Bookmark className={`h-4 w-4 ${saveSuccess ? 'fill-primary text-primary' : ''}`} />
- {isSaving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save Job'}
- </button>
+                  onClick={handleSaveJob}
+                  disabled={isSaving}
+                  className={`flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border px-8 py-3.5 font-bold transition-all focus:ring-4 disabled:opacity-50 ${
+                    savedJobId
+                      ? 'border-primary bg-primary/5 text-primary hover:bg-primary/10 focus:ring-primary/20'
+                      : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-400 focus:ring-slate-100'
+                  }`}
+                >
+                  <Bookmark className={`h-4 w-4 ${savedJobId ? 'fill-primary' : ''}`} />
+                  {isSaving ? 'Processing...' : savedJobId ? 'Saved' : 'Save Job'}
+                </button>
  </>
  ) : !user ? (
  <Link to="/login" className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-primary px-8 py-3.5 font-bold text-white shadow-md hover:bg-primary-hover transition-all">

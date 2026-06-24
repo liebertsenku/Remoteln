@@ -3,7 +3,7 @@ import { Search, Filter, Briefcase, MapPin, Tag, Bookmark } from 'lucide-react';
 import { getExternalJobs, getSavedJobs, saveJob, unsaveJob } from '../lib/api';
 import type { AggregatedJobList, ExternalJob, UserResponse, SavedJobResponse } from '../types/api';
 import Swal from 'sweetalert2';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 
 const SOURCES = ['remotive', 'arbeitnow', 'jobicy'];
@@ -39,12 +39,13 @@ type Props = {
 };
 
 export default function ExternalJobs({ user, token }: Props) {
+ const [searchParams] = useSearchParams();
  const [data, setData] = useState<AggregatedJobList | null>(null);
  const [loading, setLoading] = useState(true);
  const [error, setError] = useState<string | null>(null);
 
- const [keyword, setKeyword] = useState('');
- const [locationQuery, setLocationQuery] = useState('');
+ const [keyword, setKeyword] = useState(searchParams.get('q') || '');
+ const [locationQuery, setLocationQuery] = useState(searchParams.get('loc') || '');
  const [selectedSources, setSelectedSources] = useState<Set<string>>(new Set());
  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
  const [hasSalary, setHasSalary] = useState(false);

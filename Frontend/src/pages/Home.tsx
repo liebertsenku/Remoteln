@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, MapPin, Briefcase, PenTool, Code, Megaphone, Bookmark, ArrowRight } from 'lucide-react';
 import { getJobs } from '../lib/api';
 import type { JobResponse, UserResponse } from '../types/api';
@@ -24,6 +24,15 @@ export default function Home(_props: HomeProps) {
   const [jobs, setJobs] = useState<JobResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const navigate = useNavigate();
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchLocation, setSearchLocation] = useState('');
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate(`/remote-jobs?q=${encodeURIComponent(searchKeyword)}&loc=${encodeURIComponent(searchLocation)}`);
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -57,12 +66,14 @@ export default function Home(_props: HomeProps) {
           </p>
 
           {/* Search Bar Container */}
-          <div className="bg-white p-2.5 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-slate-100 max-w-3xl mx-auto flex flex-col md:flex-row items-center gap-2 relative z-10">
+          <form onSubmit={handleSearch} className="bg-white p-2.5 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-slate-100 max-w-3xl mx-auto flex flex-col md:flex-row items-center gap-2 relative z-10">
             <div className="flex-1 flex items-center gap-3 w-full px-5 py-2">
               <Search className="w-5 h-5 text-slate-400" />
               <input
                 type="text"
                 placeholder="Job title, keyword, or company"
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
                 className="w-full focus:outline-none text-slate-800 placeholder-slate-400 bg-transparent text-base"
               />
             </div>
@@ -72,13 +83,15 @@ export default function Home(_props: HomeProps) {
               <input
                 type="text"
                 placeholder="Anywhere"
+                value={searchLocation}
+                onChange={(e) => setSearchLocation(e.target.value)}
                 className="w-full focus:outline-none text-slate-800 placeholder-slate-400 bg-transparent text-base"
               />
             </div>
-            <button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white font-bold px-10 py-4 rounded-full w-full md:w-auto transition-opacity whitespace-nowrap text-base">
+            <button type="submit" className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white font-bold px-10 py-4 rounded-full w-full md:w-auto transition-opacity whitespace-nowrap text-base">
               Search Jobs
             </button>
-          </div>
+          </form>
         </div>
       </section>
 
