@@ -49,7 +49,6 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
     except HTTPException:
         raise
     except Exception as e:
-        import traceback
         print(f"Registration error: {e}")
         raise HTTPException(
             status_code=500,

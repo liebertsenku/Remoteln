@@ -8,7 +8,6 @@ from models import user, job, external, profile, application, saved_job
 # Import routers
 from routers import auth, jobs, external, profiles, applications, saved_jobs, admin
 
-from migrate_role_enum import migrate as migrate_roles
 from seed import seed_data
 from contextlib import asynccontextmanager
 
@@ -47,10 +46,16 @@ def run_migrations():
             except Exception as e:
                 print(f"⚠️ Migration for external_sync_requests failed: {e}")
 
-        try:
-            migrate_roles()
-        except Exception as e:
-            print(f"⚠️  Migration for roles failed: {e}")
+            # 3. Update role ENUM for MySQL to include 'admin'
+            try:
+                if engine.dialect.name == "mysql":
+                    conn.execute(text(
+                        "ALTER TABLE users MODIFY COLUMN role ENUM('jobseeker', 'employer', 'admin') NOT NULL DEFAULT 'jobseeker'"
+                    ))
+                    conn.commit()
+                    print("✅ Migration: users table role ENUM updated to include 'admin'")
+            except Exception as e:
+                print(f"⚠️  Migration for roles failed: {e}")
     except Exception as e:
         print(f"❌ Failed to connect to engine for migrations: {e}")
 
